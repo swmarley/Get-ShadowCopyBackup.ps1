@@ -121,7 +121,7 @@
     }
 
     Foreach($creationDate in $extractCopyDates){
-        $timeSpan = New-TimeSpan -Start $targetTime -End $creationDate | select TotalHours
+        $timeSpan = New-TimeSpan -Start $creationDate -End $targetTime | select TotalHours
         $intTimeSpan = $timeSpan.TotalHours
         $timeSpanHash.Add($creationDate, $intTimeSpan)
     }
