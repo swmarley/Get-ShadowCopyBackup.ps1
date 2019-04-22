@@ -36,14 +36,11 @@
             any Shadow Copy backup on the target system to determine if this is needed.
 
         .PARAMETER Path
-            Mandatory parameter for the portion of the UNC path starting from the parent folder you wish to 
-            recover from. If the full UNC path is "\\server1\share\parent\", the Path parameter should be
-            "parent". If there are multiple folder levels after the share or drive, include them in the 
-            Path parameter using the format "parent\subfolder".
-
-        .PARAMETER File
-            Optional parameter needed only if you want to recover an individual file. The file name should
-            be formatted to include the file extension.
+            Mandatory parameter for the target file or folder you wish to restore. This parameter should contain 
+            the portion of the UNC path that starts at the parent folder you wish to recover from. If the full UNC 
+            path is "\\server1\share\parent\", the Path parameter should begin at "parent". If there are multiple 
+            folder levels after the share or drive, include them in the Path parameter using the format 
+            "parent\subfolder\file".
 
         .PARAMETER Destination
             Required parameter for the full UNC path to the alternate location you wish to restore data to.
@@ -58,7 +55,7 @@
             Get-ShadowCopyBackup -Date 3/7/2019 -Time Evening -System server1 -Share share1 -Path Team\User -Destination \\server2\restores -EmailRecipient user1@domain.com
 
         .EXAMPLE 
-            Get-ShadowCopyBackup -Date 12/1/2018 -Time Noon -System server2 -Drive D -Path User\Desktop -Destination \\server3\restores
+            Get-ShadowCopyBackup -Date 12/1/2018 -Time Noon -System server2 -Drive D -Path User\Desktop\folder1\file.txt -Destination \\server3\restores
 
         .LINK
             GitHub Repository: https://github.com/swmarley/Get-ShadowCopyBackup.ps1
@@ -86,10 +83,6 @@
 
         [Parameter(Mandatory=$True)]
         [string] $Path,
-
-        [Parameter(Mandatory=$False)]
-        [AllowNull()]
-        [string] $File,
 
         [Parameter(Mandatory=$True)]
         [string] $Destination,
@@ -146,16 +139,10 @@
     }
 
     If(Test-Path -Path $folderPath){
-        If($File){
-            If(Get-ChildItem -Path $folderPath | Where-Object {$_.Name -eq "$($File)"}){
-                $filePath = "$($folderPath)\$($File)"
-                Copy-Item -Path $filePath -Destination "$($Destination)"
-            }
-        }
-        Elseif($Share){
+        Try{
             Copy-Item -Path "$($folderPath)" -Destination "$($Destination)" -Recurse
         }
-        Else{
+        Catch{
             Write-Warning "Error: Cannot copy items from specified path."
         }
     }
